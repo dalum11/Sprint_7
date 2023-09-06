@@ -54,6 +54,8 @@ public class GetOrderTest {
                         List.of("")},
                 {"Jozeph", "Jostar", "Address rec.123", 5, "+79217689120", 1, "2023-07-01", "SHIIIIZAAAAA!",
                         List.of("", "")},
+                {"Jozeph", "Jostar", "Address rec.123", 5, "+79217689120", 1, "2023-07-01", "SHIIIIZAAAAA!",
+                        List.of(new Color("BLACK"))}
         };
     }
 
