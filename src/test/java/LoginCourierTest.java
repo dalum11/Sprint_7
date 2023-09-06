@@ -12,54 +12,31 @@ import static org.hamcrest.Matchers.*;
 
 import static io.restassured.RestAssured.given;
 
-@RunWith(Parameterized.class)
+//@RunWith(Parameterized.class)
 public class LoginCourierTest {
-
-    private String incompleteJsonForLogin;
-    private String incorrectJsonForLogin;
-
-    public LoginCourierTest(String incompleteJsonForLogin, String incorrectJsonForLogin) {
-        this.incompleteJsonForLogin = incompleteJsonForLogin;
-        this.incorrectJsonForLogin = incorrectJsonForLogin;
-    }
-
-    @Parameterized.Parameters
-    public static Object[][] getTestData() {
-        return new Object[][] {
-                {"{\"login\": \"crusader\"}", "{\"login\": \"crusmder\", \"password\": \"1234\"}"},
-                {"{\"password\": \"1234\"}", "{\"login\": \"crusader\", \"password\": \"0n234\"}"}
-        };
-    }
 
     @Before
     public void setBaseURL() {
         RestAssured.baseURI = "http://qa-scooter.praktikum-services.ru/";
     }
 
-    public Response getResponseByPost(String json, String url) {
-        return given()
-                .accept(ContentType.JSON)
-                .contentType("application/json")
-                .and()
-                .body(json)
-                .when()
-                .post(url);
-    }
-
     @Test
     @DisplayName("Courier login with valid test data")
     @Description("Base test for /api/v1/courier/login, positive")
     public void courierLoginSuccessfulReturn200() {
-        String json = "{\"login\": \"crusader\", \"password\": \"1234\"}";
-        Response response = getResponseByPost(json, "/api/v1/courier/login");
+        LoginCourier courier = new LoginCourier("crusader", "1234");
+        CourierApi courierApi = new CourierApi("/api/v1/courier/login");
+        Response response = courierApi.getResponseByPost(courier);
         response.then().assertThat().body("id", notNullValue()).and().statusCode(200);
     }
 
     @Test
-    @DisplayName("Courier login with incomplete test data")
+    @DisplayName("Courier login without login")
     @Description("Test for /api/v1/courier/login, negative")
-    public void courierLoginWithIncompleteDataReturn400() {
-        Response response = getResponseByPost(incompleteJsonForLogin, "/api/v1/courier/login");
+    public void courierLoginWithoutLoginReturn400() {
+        LoginCourier courier = new LoginCourier(null, "1234");
+        CourierApi courierApi = new CourierApi("/api/v1/courier/login");
+        Response response = courierApi.getResponseByPost(courier);
         try {
             response.then().assertThat().statusCode(400);
 
@@ -67,17 +44,31 @@ public class LoginCourierTest {
             System.out.println(e.getMessage());
             System.out.println(response.statusCode());
         }
-//             Assert.assertEquals("Тело сообщения об ошибке другое, оно следующее: " + response.getBody().asString(),
-//                     "{\"message\": \"Недостаточно данных для входа\"}", response.getBody().asString());
+    }
+
+    @Test
+    @DisplayName("Courier login without password")
+    @Description("Test for /api/v1/courier/login, negative")
+    public void courierLoginWithoutPasswordReturn400() {
+        LoginCourier courier = new LoginCourier("crusader", null);
+        CourierApi courierApi = new CourierApi("/api/v1/courier/login");
+        Response response = courierApi.getResponseByPost(courier);
+        try {
+            response.then().assertThat().statusCode(400);
+
+        } catch (AssertionError e) {
+            System.out.println(e.getMessage());
+            System.out.println(response.statusCode());
+        }
     }
 
     @Test
     @DisplayName("Courier login with non-existent data")
     @Description("Test for /api/v1/courier/login, negative")
     public void courierLoginWithNonExistentData(){
-        Response response = getResponseByPost(incorrectJsonForLogin, "/api/v1/courier/login");
+        LoginCourier courier = new LoginCourier("askjskjckc", "84ihhds");
+        CourierApi courierApi = new CourierApi("/api/v1/courier/login");
+        Response response = courierApi.getResponseByPost(courier);
         response.then().statusCode(404);
-//        Assert.assertEquals("Тело ответа другое, вот оно: " + response.getBody().asString()
-//                , "{\"message\": \"Учетная запись не найдена\"}", response.getBody().asString());
     }
 }

@@ -57,21 +57,13 @@ public class GetOrderTest {
         };
     }
 
-    public Response getResponseByPost(OrderData json, String url) {
-        return given()
-                .header("Content-type", "application/json")
-                .and()
-                .body(json)
-                .when()
-                .post(url);
-    }
-
     @Test
     public void getOrderWithCorrectDataReturn200() {
         OrderData orderDataForTest = new OrderData(firstName, lastName, address,
                 metroStation, phone, rentTime, deliveryDate,
                 comment, color);
-        Response response = getResponseByPost(orderDataForTest, "/api/v1/orders");
+        OrderApi orderApi = new OrderApi("/api/v1/orders");
+        Response response = orderApi.getResponseByPost(orderDataForTest);
         String[] trackArray = response.getBody().asString().split(":");
         track = trackArray[1].replace("}", "").trim();
         response.then().body("track", notNullValue());
